@@ -655,7 +655,18 @@ func (b *SqlBuilder) buildInsert() (sql string, args []any) {
 
 	// ON CONFLICT
 	if b.insertOnConflictDoNothing {
-		sb.WriteString("\nON CONFLICT DO NOTHING")
+		if len(b.insertOnConflictKeys) > 0 {
+			sb.WriteString("\nON CONFLICT (")
+			for i, column := range b.insertOnConflictKeys {
+				if i > 0 {
+					sb.WriteString(", ")
+				}
+				sb.WriteString(column.name)
+			}
+			sb.WriteString(") DO NOTHING")
+		} else {
+			sb.WriteString("\nON CONFLICT DO NOTHING")
+		}
 	} else if len(b.insertOnConflictKeys) > 0 {
 		sb.WriteString("\nON CONFLICT (")
 		for i, column := range b.insertOnConflictKeys {
