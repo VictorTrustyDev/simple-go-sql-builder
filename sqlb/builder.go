@@ -21,6 +21,7 @@ type SqlBuilder struct {
 	orders          []orderBy
 	offset          uint // offset is the number of rows to skip
 	limit           uint // limit is the number of rows to return
+	lockingClause   lockingClauseType
 	// special fields for type insert
 	insertIntoTable                     GenericTableToUse
 	insertColumns                       []GenericColumnToUse
@@ -363,6 +364,66 @@ func (b *SqlBuilder) Limit(limit uint) *SqlBuilder {
 	return b
 }
 
+func (b *SqlBuilder) ForUpdate() *SqlBuilder {
+	b.mustTypeSelect()
+	b.mustBasicSelect()
+	b.mustPreviousAction(previousIsSelectFrom, previousIsSelectJoin, previousIsSelectWhere, previousIsSelectOrderBy, previousIsSelectOffset, previousIsSelectLimit)
+	defer b.setPreviousAction(previousIsLockingClause)
+
+	b.lockingClause = lockingClauseTypeForUpdate
+	return b
+}
+
+func (b *SqlBuilder) ForUpdateNoWait() *SqlBuilder {
+	b.mustTypeSelect()
+	b.mustBasicSelect()
+	b.mustPreviousAction(previousIsSelectFrom, previousIsSelectJoin, previousIsSelectWhere, previousIsSelectOrderBy, previousIsSelectOffset, previousIsSelectLimit)
+	defer b.setPreviousAction(previousIsLockingClause)
+
+	b.lockingClause = lockingClauseTypeForUpdateNoWait
+	return b
+}
+
+func (b *SqlBuilder) ForUpdateSkipLocked() *SqlBuilder {
+	b.mustTypeSelect()
+	b.mustBasicSelect()
+	b.mustPreviousAction(previousIsSelectFrom, previousIsSelectJoin, previousIsSelectWhere, previousIsSelectOrderBy, previousIsSelectOffset, previousIsSelectLimit)
+	defer b.setPreviousAction(previousIsLockingClause)
+
+	b.lockingClause = lockingClauseTypeForUpdateSkipLocked
+	return b
+}
+
+func (b *SqlBuilder) ForNoKeyUpdate() *SqlBuilder {
+	b.mustTypeSelect()
+	b.mustBasicSelect()
+	b.mustPreviousAction(previousIsSelectFrom, previousIsSelectJoin, previousIsSelectWhere, previousIsSelectOrderBy, previousIsSelectOffset, previousIsSelectLimit)
+	defer b.setPreviousAction(previousIsLockingClause)
+
+	b.lockingClause = lockingClauseTypeForNoKeyUpdate
+	return b
+}
+
+func (b *SqlBuilder) ForShare() *SqlBuilder {
+	b.mustTypeSelect()
+	b.mustBasicSelect()
+	b.mustPreviousAction(previousIsSelectFrom, previousIsSelectJoin, previousIsSelectWhere, previousIsSelectOrderBy, previousIsSelectOffset, previousIsSelectLimit)
+	defer b.setPreviousAction(previousIsLockingClause)
+
+	b.lockingClause = lockingClauseTypeForShare
+	return b
+}
+
+func (b *SqlBuilder) ForKeyShare() *SqlBuilder {
+	b.mustTypeSelect()
+	b.mustBasicSelect()
+	b.mustPreviousAction(previousIsSelectFrom, previousIsSelectJoin, previousIsSelectWhere, previousIsSelectOrderBy, previousIsSelectOffset, previousIsSelectLimit)
+	defer b.setPreviousAction(previousIsLockingClause)
+
+	b.lockingClause = lockingClauseTypeForKeyShare
+	return b
+}
+
 // INSERT INTO
 
 func (b *SqlBuilder) mustTypeInsert() {
@@ -591,6 +652,11 @@ func (b *SqlBuilder) buildSelect() (sql string, args []any) {
 	} else if b.limit > 0 {
 		sb.WriteString("LIMIT ")
 		sb.WriteString(fmt.Sprintf("%d", b.limit))
+		sb.WriteString("\n")
+	}
+
+	if b.selectType == selectTypeBasic && b.lockingClause != "" {
+		sb.WriteString(string(b.lockingClause))
 		sb.WriteString("\n")
 	}
 

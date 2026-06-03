@@ -28,6 +28,7 @@ const (
 	previousIsSelectOrderBy previousAddedBuilderAction = "SELECT ORDER BY"
 	previousIsSelectOffset  previousAddedBuilderAction = "SELECT OFFSET"
 	previousIsSelectLimit   previousAddedBuilderAction = "SELECT LIMIT"
+	previousIsLockingClause previousAddedBuilderAction = "LOCKING CLAUSE"
 	// INSERT
 	previousIsInsertInto                        previousAddedBuilderAction = "INSERT INTO"
 	previousIsInsertIntoValues                  previousAddedBuilderAction = "INSERT VALUES"
@@ -66,6 +67,18 @@ type orderBy struct {
 	column GenericColumnToUse
 	asc    bool
 }
+
+type lockingClauseType string
+
+const (
+	noLockingClause                      lockingClauseType = ""
+	lockingClauseTypeForUpdate           lockingClauseType = "FOR UPDATE"
+	lockingClauseTypeForUpdateNoWait     lockingClauseType = "FOR UPDATE NOWAIT"
+	lockingClauseTypeForUpdateSkipLocked lockingClauseType = "FOR UPDATE SKIP LOCKED"
+	lockingClauseTypeForNoKeyUpdate      lockingClauseType = "FOR NO KEY UPDATE"
+	lockingClauseTypeForShare            lockingClauseType = "FOR SHARE"
+	lockingClauseTypeForKeyShare         lockingClauseType = "FOR KEY SHARE"
+)
 
 type SqlRows interface {
 	Next() bool

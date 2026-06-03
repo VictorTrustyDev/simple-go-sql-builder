@@ -178,6 +178,96 @@ OFFSET 10 LIMIT 20
 			wantArgs: nil,
 		},
 		{
+			name: "select some columns from one tables for update",
+			builder: func() *SqlBuilder {
+				table1 := UseTable[testStruct1]().Alias("t1").Seal()
+				return Select(
+					table1.Columns("cost", "amount")...,
+				).
+					From(table1).ForUpdate()
+			},
+			wantSql: `SELECT t1.cost, t1.amount
+FROM table1 AS t1
+FOR UPDATE
+`,
+			wantArgs: nil,
+		},
+		{
+			name: "select some columns from one tables for update no wait",
+			builder: func() *SqlBuilder {
+				table1 := UseTable[testStruct1]().Alias("t1").Seal()
+				return Select(
+					table1.Columns("cost", "amount")...,
+				).
+					From(table1).ForUpdateNoWait()
+			},
+			wantSql: `SELECT t1.cost, t1.amount
+FROM table1 AS t1
+FOR UPDATE NOWAIT
+`,
+			wantArgs: nil,
+		},
+		{
+			name: "select some columns from one tables for update skip locked",
+			builder: func() *SqlBuilder {
+				table1 := UseTable[testStruct1]().Alias("t1").Seal()
+				return Select(
+					table1.Columns("cost", "amount")...,
+				).
+					From(table1).ForUpdateSkipLocked()
+			},
+			wantSql: `SELECT t1.cost, t1.amount
+FROM table1 AS t1
+FOR UPDATE SKIP LOCKED
+`,
+			wantArgs: nil,
+		},
+		{
+			name: "select some columns from one tables for no key update",
+			builder: func() *SqlBuilder {
+				table1 := UseTable[testStruct1]().Alias("t1").Seal()
+				return Select(
+					table1.Columns("cost", "amount")...,
+				).
+					From(table1).ForNoKeyUpdate()
+			},
+			wantSql: `SELECT t1.cost, t1.amount
+FROM table1 AS t1
+FOR NO KEY UPDATE
+`,
+			wantArgs: nil,
+		},
+		{
+			name: "select some columns from one tables for share",
+			builder: func() *SqlBuilder {
+				table1 := UseTable[testStruct1]().Alias("t1").Seal()
+				return Select(
+					table1.Columns("cost", "amount")...,
+				).
+					From(table1).ForShare()
+			},
+			wantSql: `SELECT t1.cost, t1.amount
+FROM table1 AS t1
+FOR SHARE
+`,
+			wantArgs: nil,
+		},
+		{
+			name: "select some columns from one tables for key share",
+			builder: func() *SqlBuilder {
+				table1 := UseTable[testStruct1]().Alias("t1").Seal()
+				return Select(
+					table1.Columns("cost", "amount")...,
+				).
+					From(table1).ForKeyShare()
+			},
+			wantSql: `SELECT t1.cost, t1.amount
+FROM table1 AS t1
+FOR KEY SHARE
+`,
+			wantArgs: nil,
+		},
+		{
 			name: "select exists from one table",
 			builder: func() *SqlBuilder {
 				table1 := UseTable[testStruct1]().Alias("t1").Seal()
